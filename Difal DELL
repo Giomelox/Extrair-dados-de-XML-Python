@@ -1,0 +1,145 @@
+import os
+from openpyxl.styles import numbers
+from xml.dom import minidom
+from openpyxl import Workbook
+from datetime import datetime
+from openpyxl.styles import PatternFill, Font, Alignment
+from openpyxl.styles.borders import Border, Side
+
+pasta_xml = 'XML_DELL'
+
+#criar uma planilha excel
+
+wb = Workbook()
+
+ws = wb.active
+
+def formatar_linha(worksheet, cor_fundo, cor_fonte, cor_borda):
+    for linha in worksheet.iter_rows(min_row = 1, max_row = 1, min_col = 1, max_col = 15):
+        for celula in linha:
+            celula.fill = PatternFill(start_color = cor_fundo, end_color = cor_fundo, fill_type = 'solid')
+            celula.font = Font(color = cor_fonte, name = 'calibri', size = 10, bold = True)
+            celula.alignment = Alignment(horizontal = 'center', vertical = 'center', wrap_text = True)
+            celula.border = Border(left = Side (style = 'thin', color = cor_borda),
+                                   right = Side (style = 'thin', color = cor_borda),
+                                   top = Side (style = 'thin', color = cor_borda),
+                                   bottom = Side (style = 'thin', color = cor_borda),
+                                   )
+            
+if not os.path.exists(pasta_xml):
+    print("A pasta especificada não existe.")
+else:
+
+    # Lista todos os arquivos na pasta
+    arquivos = os.listdir(pasta_xml)
+
+    #Cria um novo objeto
+    workbook = Workbook()
+    sheet = workbook.active
+
+    for idx, arquivo in enumerate(arquivos, start = 2):
+        # Verifica se o caminho é um arquivo (e não um diretório)
+        caminho_arquivo = os.path.join(pasta_xml, arquivo)
+        if os.path.isfile(caminho_arquivo):
+            try:
+                # Abre o arquivo XML
+                with open(caminho_arquivo, 'r') as file:
+                    nfe = minidom.parse(file)
+                    # Código que extrai o número do chamado
+                    chamado = nfe.getElementsByTagName('infCpl')
+                    print_chamado = str((chamado[0].firstChild.data[30:39]))
+                    
+                    # Código que extrai a data de emissão
+                    data_emissao = nfe.getElementsByTagName('dhEmi')
+                    print_data_emissao = str((data_emissao[0].firstChild.data[2:10]))
+                    data = datetime.strptime(print_data_emissao, '%y-%m-%d')
+                    nova_data = data.strftime('%d/%m/%y')
+                    
+                    # Código que extrai o ICMS da nota
+                    ICMS_prod = nfe.getElementsByTagName('pICMS')
+                    print_ICMS_prod = float(ICMS_prod[0].firstChild.data) / 100
+
+                    # Código que extrai a nota fiscal da nota
+                    ref_nf = nfe.getElementsByTagName('nNF')
+                    print_ref_nf = str(ref_nf[0].firstChild.data)
+
+                    # Código que extrai o valor da nota
+                    vNF = nfe.getElementsByTagName('vNF')
+                    print_valor_vNF = float(vNF[0].firstChild.data)
+
+                    # Código para formatar o CNPJ
+                    print_CNPJ = '72.381.189/0014-35'
+
+                    # Código para formatar a razão social
+                    print_razao_social = 'DELL COMPUTADORES DO BRASIL'
+
+                    # Código para formatar a coluna M da alíquota interna do estado (altera de estado para estado)
+                    print_aliquota_interna = 19 / 100
+
+                    # Insere os dados na planilha
+                    sheet[f'E{idx}'] = print_CNPJ
+                    sheet[f'F{idx}'] = print_razao_social
+                    sheet[f'G{idx}'] = print_chamado
+                    sheet[f'H{idx}'] = print_ref_nf
+                    sheet[f'I{idx}'] = nova_data
+                    sheet[f'J{idx}'] = print_valor_vNF
+                    sheet[f'K{idx}'] = print_ICMS_prod
+                    sheet[f'L{idx}'] = print_valor_vNF * print_ICMS_prod
+                    sheet[f'M{idx}'] = print_aliquota_interna
+                    sheet[f'N{idx}'] = print_aliquota_interna - print_ICMS_prod
+
+            except Exception as e:
+                print(f"Erro ao processar o arquivo {arquivo}: {e}")
+
+    #Adiciona dados à planilha
+    Dados_linha1 = [
+        'Nome Credenciada / Destino',
+        'CNPJ Credenciada / Destino',
+        'Mês de Referência',
+        'Número da ND',
+        'CNPJ Origem',
+        'Razão Social / Origem',
+        'Nr. Chamado do Cliente',
+        'Número da NF de referência',
+        'Data de Emissão',
+        'Valor da BC do ICMS da NF de referência',
+        'Alíquota Interestadual',
+        'Valor do ICMS da NF de referência',
+        'Alíquota interna do Estado de destino',
+        'Alíquota do Diferencial',
+        'Valor do ICMS recolhido por Diferencial de Alíquota'
+        ]
+    for col, valor in enumerate(Dados_linha1, start = 1):
+        sheet.cell(row = 1, column = col, value = valor)
+        
+        #Adiciona a largura e altura das colunas
+        largura_colunas = [
+        25.43, 18.71, 10.00, 9.86, 20.14, 29.00, 18.43, 14.00, 12.14, 23.71, 16.86, 20.57, 15.00, 15.00, 22.57
+        ]
+    for i, largura in enumerate(largura_colunas, start = 1):
+        sheet.column_dimensions[chr(64 + i)].width = largura
+        
+    for a in range(2):
+        sheet.row_dimensions[a].height = 34.00
+            
+
+    formatar_linha(sheet, cor_fundo = '9BC2E6', cor_fonte = '000000', cor_borda = '000000')
+
+    for row in sheet.iter_rows(min_row=2, max_row=sheet.max_row, min_col=11, max_col=11):
+        for cell in row:
+            cell.number_format = numbers.FORMAT_PERCENTAGE_00
+
+    for linha in range(2,2001):
+        for col in range(1, 16):
+            celula = sheet.cell(row=linha, column=col)
+            celula.fill = PatternFill(start_color='FFFFFF', end_color='FFFFFF', fill_type='solid')
+            celula.font = Font(color='000000', name='calibri', size=11, bold = False)
+            celula.alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
+            celula.border = Border(left=Side(style='thin', color='000000'),
+                                    right=Side(style='thin', color='000000'),
+                                    top=Side(style='thin', color='000000'),
+                                    bottom=Side(style='thin', color='000000'))
+        
+    nome_arquivo = input('Qual nome deseja colocar na planilha? ')
+    workbook.save(nome_arquivo + '.xlsx')
+    print('A planilha ' + nome_arquivo + ' foi criada com sucesso!')
