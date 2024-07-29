@@ -6,9 +6,9 @@ from datetime import datetime
 from openpyxl.styles import PatternFill, Font, Alignment
 from openpyxl.styles.borders import Border, Side
 
-pasta_xml = 'XML_DELL'
+pasta_xml = -Pasta que contém os XMLs que deseja extrair os dados (XML de notas fiscais eletrônicas DANFE).-
 
-#criar uma planilha excel
+# Cria uma planilha excel
 
 wb = Workbook()
 
@@ -91,7 +91,7 @@ else:
             except Exception as e:
                 print(f"Erro ao processar o arquivo {arquivo}: {e}")
 
-    #Adiciona dados à planilha
+    # Adiciona dados à planilha
     Dados_linha1 = [
         'Nome Credenciada / Destino',
         'CNPJ Credenciada / Destino',
