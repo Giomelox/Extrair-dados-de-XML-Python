@@ -68,13 +68,13 @@ else:
                     print_valor_vNF = float(vNF[0].firstChild.data)
 
                     # Código para formatar o CNPJ
-                    print_CNPJ = '72.381.189/0014-35'
+                    print_CNPJ = - Use um CNPJ fictício ou real -
 
                     # Código para formatar a razão social
-                    print_razao_social = 'DELL COMPUTADORES DO BRASIL'
+                    print_razao_social = - Use a razão social que convenha -
 
                     # Código para formatar a coluna M da alíquota interna do estado (altera de estado para estado)
-                    print_aliquota_interna = 19 / 100
+                    print_aliquota_interna = - Use a alíquota interna do seu Estado - 
 
                     # Insere os dados na planilha
                     sheet[f'E{idx}'] = print_CNPJ
